@@ -1,6 +1,6 @@
 llm:
   provider: "openai-compatible"
-  base_url: "https://api.vveai.com"
+  base_url: "https://api.vveai.com/v1"
   api_key_env: "LLM_API_KEY"
   default_model: "deepseek-v4-flash"
   temperature: 0.4
@@ -8,7 +8,7 @@ llm:
 
 evaluator_llm:
   provider: "openai-compatible"
-  base_url: "https://api.vveai.com"
+  base_url: "https://api.vveai.com/v1"
   api_key_env: "EVALUATOR_API_KEY"
   model: "gpt-5.2"
   temperature: 0.0
