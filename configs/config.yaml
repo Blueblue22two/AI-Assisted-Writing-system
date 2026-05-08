@@ -1,0 +1,19 @@
+llm:
+  provider: "openai-compatible"
+  base_url: "https://api.example.com/v1"
+  api_key_env: "LLM_API_KEY"
+  default_model: "deepseek-v4-flash"
+  temperature: 0.4
+  max_tokens: 1200
+
+evaluator_llm:
+  provider: "openai-compatible"
+  base_url: "https://api.example.com/v1"
+  api_key_env: "EVALUATOR_API_KEY"
+  model: "gpt-5.2"
+  temperature: 0.0
+  max_tokens: 1000
+
+experiment:
+  repetitions: 3
+  output_dir: "results"
