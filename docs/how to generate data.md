@@ -126,7 +126,6 @@ rubric 不应该每条任务随意变化。当前项目的目标是比较 workfl
 太简单的任务不适合比较 multi-agent，因为 Baseline 也可能轻松完成。太复杂的任务会导致所有 workflow 都表现不稳定。
 
 推荐任务类型：
-
 - 有明确争议或 trade-off。
 - 需要使用 source material。
 - 能在 250 词内完成。
@@ -155,12 +154,10 @@ Revise the following draft...
 ### 4.3 source material 要平衡
 
 高质量 source material 通常同时包含：
-
 - 支持观点的信息。
 - 限制或反面因素。
 - 条件性判断。
 - 可以被引用或改写的具体依据。
-
 避免只有单边材料，比如只列好处或只列坏处。
 
 ### 4.4 不要放敏感或伦理风险数据
