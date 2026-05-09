@@ -11,6 +11,28 @@
 - `plan_execute_critique`：Planner -> Writer -> Critic -> Editor
 - 独立 `EvaluatorAgent` 对最终答案统一评分（不参与生成流程）
 
+## 技术栈
+
+- Python
+- CrewAI
+- OpenAI-compatible API 调用
+- Pydantic
+- YAML + dotenv
+- JSONL / CSV
+- Pandas
+- Matplotlib / Seaborn
+- pytest
+
+## Agents
+
+系统包含以下 agents：
+
+- **Planner Agent**：理解任务要求，生成中心论点、段落结构、关键论点和证据使用计划。
+- **Writer Agent**：根据 Planner Agent 的计划和参考材料生成 academic draft。
+- **Critic Agent**：根据 rubric 批评文本，重点检查结构、逻辑、证据使用、清晰度和学术风格。
+- **Editor Agent**：根据 Critic Agent 的反馈修订文本，输出 final answer。
+- **Evaluator Agent**：根据固定 rubric 对最终文本评分，输出结构化 JSON 分数。该 agent 可以使用不同于生成类 agents 的 LLM，以提高评分稳定性和减少自评偏差。
+
 ## 当前已实现能力
 
 - 从 `configs/config.yaml` + `.env` 加载配置与密钥（Pydantic 校验）。

@@ -6,10 +6,33 @@ This project is a lightweight multi-agent academic writing experiment system for
 
 The current implementation uses **Centralized Orchestrator + CrewAI**:
 
-- `single_agent`: Writer
-- `plan_execute`: Planner -> Writer
-- `plan_execute_critique`: Planner -> Writer -> Critic -> Editor
+### Three Experimental Conditions:
+1. `single_agent`: Writer
+2. `plan_execute`: Planner -> Writer
+3. `plan_execute_critique`: Planner -> Writer -> Critic -> Editor
 - An independent `EvaluatorAgent` scores final outputs (not part of generation workflows)
+
+## Tech Stack
+
+- Python
+- CrewAI
+- OpenAI-compatible API calls
+- Pydantic
+- YAML + dotenv
+- JSONL / CSV
+- Pandas
+- Matplotlib / Seaborn
+- pytest
+
+## Agents
+
+The system includes the following agents:
+
+- **Planner Agent**: Understands task requirements and generates a central thesis, paragraph structure, key arguments, and an evidence usage plan.
+- **Writer Agent**: Produces an academic draft based on the Planner Agent's plan and source material.
+- **Critic Agent**: Critiques the draft according to the rubric, focusing on structure, logic, evidence use, clarity, and academic style.
+- **Editor Agent**: Revises the draft based on Critic Agent feedback and outputs the final answer.
+- **Evaluator Agent**: Scores the final text using a fixed rubric and returns structured JSON scores. This agent can use a different LLM from generation agents to improve scoring stability and reduce self-evaluation bias.
 
 ## Implemented Features
 
