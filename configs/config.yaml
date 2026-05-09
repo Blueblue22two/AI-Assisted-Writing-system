@@ -5,6 +5,7 @@ llm:
   default_model: "deepseek-v4-flash"
   temperature: 0.4
   max_tokens: 1600
+  api_call_delay: 0.6
 
 evaluator_llm:
   provider: "openai-compatible"
@@ -13,6 +14,7 @@ evaluator_llm:
   model: "gpt-5.2"
   temperature: 0.0
   max_tokens: 2000
+  api_call_delay: 0.6
 
 experiment:
   repetitions: 3

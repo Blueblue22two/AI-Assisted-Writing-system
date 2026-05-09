@@ -335,12 +335,11 @@ EVALUATOR_API_KEY=your_evaluator_api_key_here
 #### 6. 准备任务数据。  
    仓库已提供两个样例文件：
 - `data/tasks_debug.jsonl`：用于 prompt 和流程调试。
-- `data/tasks_main.jsonl`：用于正式实验，可继续扩充到 20-50 条任务。
+- `data/tasks_main.jsonl`：用于正式实验。
+- `data/tasks_main_example.jsonl`：用于补充实验的任务数据（Opntional）
 
   <br />
 
-
-#### （**以下步骤需要在代码实现完成后执行**）
 
 #### 7. 运行实验。  
    代码实现完成后，可以使用以下命令运行主实验：
