@@ -117,11 +117,11 @@ class Orchestrator:
     def run_task_conditions(self, task: WritingTask, repetitions: Optional[int] = None) -> list[dict]:
         """
         Run a single task across all experimental conditions.
-
+        
         Args:
             task: The writing task to execute
             repetitions: Number of repetitions per condition (defaults to config value)
-
+            
         Returns:
             List of all run results for this task
         """
@@ -129,92 +129,31 @@ class Orchestrator:
         conditions = CrewFactory.list_conditions()
         all_results = []
 
-        # 检查已完成的运行
-        completed_runs = self._get_completed_runs()
-
-        # 计算总运行次数
-        total_runs = len(conditions) * n_repetitions
-        completed_count = sum(1 for cond in conditions for rep in range(1, n_repetitions + 1)
-                             if (task.task_id, cond, rep) in completed_runs)
-
-        logger.info(f"Task {task.task_id}: {completed_count}/{total_runs} runs already completed")
-
         for condition in conditions:
             for rep in range(1, n_repetitions + 1):
-                # 跳过已完成的运行
-                run_key = (task.task_id, condition, rep)
-                if run_key in completed_runs:
-                    logger.info(f"⏭️  Skipping completed: task={task.task_id}, condition={condition}, rep={rep}")
-                    continue
-
-                try:
-                    logger.info(f"🚀 Starting: task={task.task_id}, condition={condition}, rep={rep}/{n_repetitions}")
-                    result = self.run_single_condition(task, condition, rep)
-                    all_results.append(result)
-                    logger.info(f"✅ Completed: task={task.task_id}, condition={condition}, rep={rep}, score={result['evaluation']['overall_score']:.2f}")
-                except Exception as exc:
-                    logger.error(f"❌ Failed: task={task.task_id}, condition={condition}, rep={rep}: {exc}")
-                    # 记录失败但继续运行
-                    failed_result = {
-                        "task_id": task.task_id,
-                        "condition": condition,
-                        "repetition_id": rep,
-                        "status": "failed",
-                        "error": str(exc),
-                    }
-                    all_results.append(failed_result)
+                result = self.run_single_condition(task, condition, rep)
+                all_results.append(result)
 
         return all_results
-
-    def _get_completed_runs(self) -> set:
-        """Get set of completed (task_id, condition, repetition_id) tuples from runs.jsonl."""
-        runs_path = Path(self.config.experiment.output_dir, "runs.jsonl")
-        if not runs_path.exists():
-            return set()
-
-        completed = set()
-        with open(runs_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    run = json.loads(line)
-                    if run.get("status") != "failed":  # 只跳过成功的运行
-                        completed.add((run["task_id"], run["condition"], run["repetition_id"]))
-                except (json.JSONDecodeError, KeyError):
-                    continue
-
-        return completed
 
     def run_all_tasks(self, tasks: list[WritingTask], repetitions: Optional[int] = None) -> list[dict]:
         """
         Run all tasks across all experimental conditions.
-
+        
         Args:
             tasks: List of writing tasks to execute
             repetitions: Number of repetitions per condition (defaults to config value)
-
+            
         Returns:
             List of all run results
         """
-        from tqdm import tqdm
-
         all_results = []
 
-        for i, task in enumerate(tqdm(tasks, desc="Overall Progress", unit="task"), 1):
-            logger.info(f"📋 Starting task {task.task_id} ({i}/{len(tasks)})")
+        for task in tasks:
+            logger.info(f"Starting task {task.task_id}")
             task_results = self.run_task_conditions(task, repetitions)
             all_results.extend(task_results)
-
-            # 统计成功和失败的运行
-            successful = sum(1 for r in task_results if r.get("status") != "failed")
-            failed = len(task_results) - successful
-
-            if failed > 0:
-                logger.info(f"📊 Task {task.task_id} completed: {successful} successful, {failed} failed")
-            else:
-                logger.info(f"📊 Task {task.task_id} completed: {successful} runs")
+            logger.info(f"Completed task {task.task_id}: {len(task_results)} runs")
 
         return all_results
 

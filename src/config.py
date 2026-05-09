@@ -45,7 +45,6 @@ class LLMConfig(BaseModel):
     default_model: str
     temperature: float = Field(ge=0.0, le=2.0)
     max_tokens: int = Field(gt=0)
-    api_call_delay: float = Field(default=0.0, ge=0.0, description="Delay in seconds after each API call")
 
 
 class EvaluatorLLMConfig(BaseModel):
@@ -59,7 +58,6 @@ class EvaluatorLLMConfig(BaseModel):
     model: str
     temperature: float = Field(ge=0.0, le=2.0)
     max_tokens: int = Field(gt=0)
-    api_call_delay: float = Field(default=0.0, ge=0.0, description="Delay in seconds after each API call")
 
 
 class ExperimentConfig(BaseModel):

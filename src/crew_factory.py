@@ -29,19 +29,40 @@ class CrewFactory:
             api_key=self.api_key,
             temperature=self.llm_config.temperature,
             max_tokens=self.llm_config.max_tokens,
-            timeout=120.0,  # 设置 120 秒超时
-            max_retries=3,  # 设置最多重试 3 次
         )
+
+    def _create_planner_agent(self) -> Agent:
+        """Create and configure Planner agent."""
+        planner = PlannerAgent.create()
+        planner.llm = self.llm
+        return planner
+
+    def _create_writer_agent(self) -> Agent:
+        """Create and configure Writer agent."""
+        writer = WriterAgent.create()
+        writer.llm = self.llm
+        return writer
+
+    def _create_critic_agent(self) -> Agent:
+        """Create and configure Critic agent."""
+        critic = CriticAgent.create()
+        critic.llm = self.llm
+        return critic
+
+    def _create_editor_agent(self) -> Agent:
+        """Create and configure Editor agent."""
+        editor = EditorAgent.create()
+        editor.llm = self.llm
+        return editor
 
     def create_single_agent_crew(self, task: WritingTask) -> Crew:
         """
         Create a single-agent baseline crew.
-        
+
         Condition A: Single-Agent Baseline
         One writer agent directly generates the final answer.
         """
-        writer = WriterAgent.create()
-        writer.llm = self.llm
+        writer = self._create_writer_agent()
 
         write_task = Task(
             description=WriterAgent.generate_prompt(
@@ -52,7 +73,7 @@ class CrewFactory:
                 rubric=task.rubric.model_dump(),
             ),
             agent=writer,
-            expected_output="A complete academic paragraph meeting the task requirements.",
+            expected_output="A complete academic essay meeting the task requirements (approximately 800 words).",
         )
 
         return Crew(
@@ -60,20 +81,18 @@ class CrewFactory:
             tasks=[write_task],
             process=Process.sequential,
             verbose=True,
+            tracing=False,
         )
 
     def create_plan_execute_crew(self, task: WritingTask) -> Crew:
         """
         Create a plan-execute crew.
-        
+
         Condition B: Plan-Execute
         Planner -> Writer
         """
-        planner = PlannerAgent.create()
-        planner.llm = self.llm
-
-        writer = WriterAgent.create()
-        writer.llm = self.llm
+        planner = self._create_planner_agent()
+        writer = self._create_writer_agent()
 
         plan_task = Task(
             description=PlannerAgent.generate_prompt(
@@ -83,7 +102,12 @@ class CrewFactory:
                 rubric=task.rubric.model_dump(),
             ),
             agent=planner,
-            expected_output="A detailed writing plan with thesis statement, outline, key arguments, and evidence plan.",
+            expected_output="""A detailed writing plan with:
+            - Thesis statement
+            - Detailed paragraph outline with topic sentences
+            - Key arguments in order
+            - Evidence plan mapping source material to arguments
+            - Writing strategy notes""",
         )
 
         write_task = Task(
@@ -95,7 +119,7 @@ class CrewFactory:
                 rubric=task.rubric.model_dump(),
             ),
             agent=writer,
-            expected_output="A complete academic paragraph following the writing plan.",
+            expected_output="A complete academic essay following the writing plan (approximately 800 words).",
             context=[plan_task],
         )
 
@@ -104,26 +128,20 @@ class CrewFactory:
             tasks=[plan_task, write_task],
             process=Process.sequential,
             verbose=True,
+            tracing=False,
         )
 
     def create_plan_execute_critique_crew(self, task: WritingTask) -> Crew:
         """
         Create a plan-execute-critique crew.
-        
+
         Condition C: Plan-Execute-Critique
         Planner -> Writer -> Critic -> Editor
         """
-        planner = PlannerAgent.create()
-        planner.llm = self.llm
-
-        writer = WriterAgent.create()
-        writer.llm = self.llm
-
-        critic = CriticAgent.create()
-        critic.llm = self.llm
-
-        editor = EditorAgent.create()
-        editor.llm = self.llm
+        planner = self._create_planner_agent()
+        writer = self._create_writer_agent()
+        critic = self._create_critic_agent()
+        editor = self._create_editor_agent()
 
         plan_task = Task(
             description=PlannerAgent.generate_prompt(
@@ -133,7 +151,12 @@ class CrewFactory:
                 rubric=task.rubric.model_dump(),
             ),
             agent=planner,
-            expected_output="A detailed writing plan with thesis statement, outline, key arguments, and evidence plan.",
+            expected_output="""A detailed writing plan with:
+            - Thesis statement
+            - Detailed paragraph outline with topic sentences
+            - Key arguments in order
+            - Evidence plan mapping source material to arguments
+            - Writing strategy notes""",
         )
 
         write_task = Task(
@@ -145,7 +168,7 @@ class CrewFactory:
                 rubric=task.rubric.model_dump(),
             ),
             agent=writer,
-            expected_output="A complete academic draft following the writing plan.",
+            expected_output="A complete academic draft following the writing plan (approximately 800 words).",
             context=[plan_task],
         )
 
@@ -157,7 +180,11 @@ class CrewFactory:
                 rubric=task.rubric.model_dump(),
             ),
             agent=critic,
-            expected_output="A structured critique with strengths, weaknesses, and revision suggestions.",
+            expected_output="""A structured critique with:
+            - Summary assessment
+            - Dimension-by-dimension feedback (relevance, structure, evidence use, argument clarity, academic style, grammar)
+            - Specific revision suggestions
+            - Priority revision checklist""",
             context=[write_task],
         )
 
@@ -171,7 +198,7 @@ class CrewFactory:
                 rubric=task.rubric.model_dump(),
             ),
             agent=editor,
-            expected_output="A revised final academic paragraph incorporating the critique feedback.",
+            expected_output="A revised final academic essay addressing all critique points (approximately 800 words).",
             context=[write_task, critique_task],
         )
 
@@ -180,19 +207,20 @@ class CrewFactory:
             tasks=[plan_task, write_task, critique_task, edit_task],
             process=Process.sequential,
             verbose=True,
+            tracing=False,
         )
 
     def get_crew_for_condition(self, condition: str, task: WritingTask) -> Crew:
         """
         Get the appropriate crew for a given experimental condition.
-        
+
         Args:
             condition: One of "single_agent", "plan_execute", "plan_execute_critique"
             task: The writing task to execute
-            
+
         Returns:
             A CrewAI Crew configured for the specified condition
-            
+
         Raises:
             ValueError: If condition is not recognized
         """

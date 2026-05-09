@@ -1,4 +1,4 @@
 condition_1,condition_2,wins,ties,losses,win_rate,mean_diff
-single_agent,plan_execute,17,2,7,65.4,0.03
-single_agent,plan_execute_critique,19,1,6,73.1,0.101
-plan_execute,plan_execute_critique,14,2,10,53.8,0.071
+single_agent,plan_execute,7,0,8,46.7,-0.058
+single_agent,plan_execute_critique,13,0,2,86.7,0.151
+plan_execute,plan_execute_critique,14,0,1,93.3,0.209

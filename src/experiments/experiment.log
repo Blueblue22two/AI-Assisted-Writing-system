@@ -1,0 +1,24 @@
+2026-05-09 12:58:09,626 - INFO - Loading configuration
+2026-05-09 12:58:09,626 - ERROR - Experiment failed: Config file not found: configs/config.yaml
+Traceback (most recent call last):
+  File "/Users/liam/Desktop/AI-Assisted-Writing-system 2/src/experiments/runner.py", line 56, in main
+    config, secrets = load_config(args.config)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liam/Desktop/AI-Assisted-Writing-system 2/src/config.py", line 206, in load_config
+    config = load_app_config(config_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liam/Desktop/AI-Assisted-Writing-system 2/src/config.py", line 151, in load_app_config
+    raise ConfigurationError(f"Config file not found: {path}")
+src.config.ConfigurationError: Config file not found: configs/config.yaml
+2026-05-09 19:28:03,824 - INFO - Loading configuration
+2026-05-09 19:28:03,824 - ERROR - Experiment failed: Config file not found: configs/config.yaml
+Traceback (most recent call last):
+  File "/Users/liam/Desktop/AI-Assisted-Writing-system/src/experiments/runner.py", line 56, in main
+    config, secrets = load_config(args.config)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liam/Desktop/AI-Assisted-Writing-system/src/config.py", line 206, in load_config
+    config = load_app_config(config_path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liam/Desktop/AI-Assisted-Writing-system/src/config.py", line 151, in load_app_config
+    raise ConfigurationError(f"Config file not found: {path}")
+src.config.ConfigurationError: Config file not found: configs/config.yaml

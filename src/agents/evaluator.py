@@ -11,42 +11,17 @@ class EvaluatorAgent:
     """Evaluator Agent for scoring academic writing based on rubric."""
 
     RUBRIC_DESCRIPTIONS = {
-        "relevance": """Evaluates whether the answer directly addresses the writing task and remains focused on the instruction.
-- 1: The answer is largely irrelevant or fails to address the task.
-- 2: The answer only partially addresses the task and misses major requirements.
-- 3: The answer addresses the task in a basic way but may be incomplete or generic.
-- 4: The answer is relevant and covers most task requirements clearly.
-- 5: The answer fully addresses the task with strong focus and no major omissions.""",
-        "structure": """Evaluates the organization of ideas, paragraph structure, logical flow, and coherence.
-- 1: The answer is disorganized and difficult to follow.
-- 2: The answer has weak organization with unclear connections between ideas.
-- 3: The answer has a basic structure, but the flow or transitions are limited.
-- 4: The answer is well organized with mostly clear logical progression.
-- 5: The answer is highly coherent, well structured, and logically developed.""",
-        "evidence_use": """Evaluates how effectively the answer uses the source material or background information to support claims.
-- 1: The answer does not use the source material or uses it inaccurately.
-- 2: The answer makes minimal or vague use of the source material.
-- 3: The answer uses some relevant evidence, but support is limited or underdeveloped.
-- 4: The answer uses relevant evidence appropriately to support most claims.
-- 5: The answer uses source material accurately, specifically, and effectively throughout.""",
-        "argument_clarity": """Evaluates whether the central argument is clear, well reasoned, and critically developed.
-- 1: The answer lacks a clear argument or contains flawed reasoning.
-- 2: The argument is weak, unclear, or insufficiently developed.
-- 3: The answer presents a basic argument, but reasoning may be shallow or uneven.
-- 4: The argument is clear, reasonable, and mostly well developed.
-- 5: The argument is precise, persuasive, and shows strong critical reasoning.""",
-        "academic_style": """Evaluates whether the language is appropriate for academic writing.
-- 1: The language is informal, inappropriate, or unsuitable for academic writing.
-- 2: The language is sometimes informal, vague, or imprecise.
-- 3: The style is generally academic but may contain repetitive or generic phrasing.
-- 4: The language is clear, formal, and mostly precise.
-- 5: The language is consistently formal, precise, objective, and academically appropriate.""",
-        "grammar_readability": """Evaluates grammatical accuracy, fluency, and ease of reading.
-- 1: Frequent grammar or readability problems seriously affect understanding.
-- 2: Several language issues make parts of the answer difficult to read.
-- 3: The answer is generally understandable but contains noticeable language issues.
-- 4: The answer is fluent and readable with only minor language issues.
-- 5: The answer is fluent, clear, grammatically accurate, and easy to read.""",
+        "relevance": """Extremely strict. 5=perfectly addresses every nuance of the task with zero omission or digression (almost never give 5). 4=addresses all requirements but lacks depth or precision in at least one area. 3=misses at least one major requirement or has noticeable digression. 2=only addresses minor aspects; major omissions. 1=largely irrelevant or off-task.""",
+
+        "structure": """Extremely strict. 5=flawless organization, every paragraph has perfect purpose and transition (almost never give 5). 4=well organized with clear flow but minor structural issue exists. 3=basic structure but inconsistent flow or weak transitions. 2=weak organization; paragraphs lack clear purpose. 1=disorganized and difficult to follow.""",
+
+        "evidence_use": """Extremely strict. 5=every claim anchored to explicit source evidence with seamless integration (almost never give 5). 4=most claims supported with relevant evidence but one claim weak or integration could be tighter. 3=some evidence present but support limited or underdeveloped. 2=minimal or vague use; claims mostly unsupported. 1=no use or inaccurate use of source.""",
+
+        "argument_clarity": """Extremely strict. 5=nuanced, persuasive, critically sophisticated argument with addressed counterpoints (almost never give 5). 4=clear, reasonable argument but lacks full nuance or sophistication. 3=basic argument but shallow, predictable, or lacking critical depth. 2=weak or unclear argument; reader must infer main point. 1=no discernible argument or fundamentally flawed reasoning.""",
+
+        "academic_style": """Extremely strict. 5=consistently formal, precise, elegant academic register (almost never give 5). 4=formal and clear but occasional phrasing could be more precise or sophisticated. 3=generally academic but has repetitive, generic, or awkward phrasing. 2=noticeably informal, vague, or imprecise at times. 1=completely inappropriate for academic writing.""",
+
+        "grammar_readability": """Extremely strict. 5=perfectly fluent, grammatically flawless, sophisticated sentence structures (almost never give 5). 4=fluent with only minor, occasional issues that don't impede understanding. 3=generally understandable but has noticeable errors. 2=several issues making parts hard to read. 1=frequent errors seriously affecting understanding.""",
     }
 
     def __init__(self, llm_client: LLMClient):
@@ -57,7 +32,7 @@ class EvaluatorAgent:
         rubric_desc = "\n".join([f"## {metric.replace('_', ' ').title()}\n{self.RUBRIC_DESCRIPTIONS[metric]}" for metric in PRIMARY_METRICS])
 
         return f"""
-You are an independent academic writing evaluator.
+You are an extremely strict, independent academic writing evaluator.
 
 Evaluate the answer according to the given writing task, source material, target word count, and rubric.
 
@@ -65,16 +40,18 @@ You must not assume anything about how the answer was generated.
 You must not reward or penalize the answer based on any workflow.
 Evaluate only the quality of the final answer.
 
-Use a 1-5 integer scale for each dimension:
+Use a 1-5 scale for each dimension (supports decimal values like 4.5, 3.7, 4.2, etc.):
 1 = very poor
 2 = weak
 3 = acceptable
 4 = good
-5 = excellent
+5 = excellent (almost never give 5 - reserve for truly flawless work)
+
+BE HARSH. A score of 4 means "good but noticeably imperfect". Most competent answers should score between 2.5 and 4.0.
 
 Return only valid JSON with the following fields:
 - eval_id: string (the evaluation ID)
-- scores: object with keys: relevance, structure, evidence_use, argument_clarity, academic_style, grammar_readability
+- scores: object with keys: relevance, structure, evidence_use, argument_clarity, academic_style, grammar_readability (values should be numbers, can be decimals like 3.5)
 - overall_score: number (average of all dimension scores)
 - justification: string (brief explanation, max 80 words)
 
@@ -111,7 +88,7 @@ Answer:
         """
         prompt = self.generate_prompt(eval_id, instruction, source_material, target_word_count, rubric, answer)
 
-        messages = [{"role": "system", "content": "You are an impartial academic writing evaluator."}, {"role": "user", "content": prompt}]
+        messages = [{"role": "system", "content": "You are an extremely strict, impartial academic writing evaluator. Be harsh. Do not give 5 unless the work is truly flawless."}, {"role": "user", "content": prompt}]
 
         try:
             result = self.llm_client.structured_output(messages, temperature=0.0)
@@ -137,7 +114,7 @@ Please return valid JSON with: eval_id, scores (object with relevance, structure
         except ValueError:
             return EvaluationResult(
                 eval_id=eval_id,
-                scores={metric: 1 for metric in PRIMARY_METRICS},
+                scores={metric: 1.0 for metric in PRIMARY_METRICS},
                 overall_score=1.0,
                 justification="Failed to parse evaluator response",
             )
@@ -148,9 +125,14 @@ Please return valid JSON with: eval_id, scores (object with relevance, structure
 
         for metric in PRIMARY_METRICS:
             if metric not in scores:
-                scores[metric] = 1
+                scores[metric] = 1.0
             else:
-                scores[metric] = int(scores[metric])
+                val = scores[metric]
+                if isinstance(val, (int, float)):
+                    # Limit to 1-5 range, round to 1 decimal place
+                    scores[metric] = round(max(1.0, min(5.0, float(val))), 1)
+                else:
+                    scores[metric] = 1.0
 
         overall_score = result.get("overall_score")
         if overall_score is None:

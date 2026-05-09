@@ -51,8 +51,6 @@ class LLMClient:
         self.client = OpenAI(
             base_url=config.base_url,
             api_key=api_key,
-            timeout=60.0,  # 增加超时时间到 60 秒
-            max_retries=3,  # 设置重试次数
         )
 
     def chat_completion(
@@ -101,7 +99,7 @@ class LLMClient:
         output_tokens = usage.completion_tokens if usage else 0
         total_tokens = usage.total_tokens if usage else 0
 
-        result = LLMCallResult(
+        return LLMCallResult(
             content=content,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
@@ -109,14 +107,6 @@ class LLMClient:
             model=params["model"],
             latency_ms=(t_end - t_start) * 1000,
         )
-
-        # 添加 API 调用间隔延迟
-        delay = getattr(self.config, "api_call_delay", 0.0)
-        if delay > 0:
-            logger.debug(f"Sleeping {delay}s after API call")
-            time.sleep(delay)
-
-        return result
 
     def structured_output(
         self,

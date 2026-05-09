@@ -4,10 +4,7 @@ import argparse
 import logging
 import sys
 
-from tqdm import tqdm
-
 from src.config import load_config, load_tasks_jsonl
-from src.crew_factory import CrewFactory
 from src.orchestrator import Orchestrator
 
 
@@ -40,7 +37,7 @@ def main():
         default="data/tasks_debug.jsonl",
         help="Path to debug tasks JSONL file"
     )
-
+    
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -68,11 +65,6 @@ def main():
 
         logger.info(f"Loaded {len(tasks)} tasks")
         logger.info(f"Running {n_repetitions} repetitions per condition")
-
-        # 计算总运行次数
-        conditions = CrewFactory.list_conditions()
-        total_runs = len(tasks) * len(conditions) * n_repetitions
-        logger.info(f"Total planned runs: {total_runs} ({len(tasks)} tasks × {len(conditions)} conditions × {n_repetitions} reps)")
 
         orchestrator = Orchestrator(config, secrets)
 
